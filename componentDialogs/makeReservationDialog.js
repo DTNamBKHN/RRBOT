@@ -35,14 +35,14 @@ class MakeReservationDialog extends ComponentDialog {
         this.initialDialogId = WATERFALL_DIALOG;
     }
 
-    async run(turnContext, accessor) {
+    async run(turnContext, accessor, entities) {
         const dialogSet = new DialogSet(accessor);
         dialogSet.add(this);
 
         const dialogContext = await dialogSet.createContext(turnContext);
         const results = await dialogContext.continueDialog();
         if (results.status === DialogTurnStatus.empty) {
-            await dialogContext.beginDialog(this.id);
+            await dialogContext.beginDialog(this.id, entities);
         }
     }
 
@@ -58,7 +58,7 @@ class MakeReservationDialog extends ComponentDialog {
             return await step.prompt(TEXT_PROMPT, 'In what name reservation is to be made?');
         }
         if (step.result === false) {
-            await step.context.sendActivity('You chose not to go ahead with reservation.');
+            await step.context.sendActivity('You choose not to go ahead with reservation.');
             endDialog = true;
             return await step.endDialog();
         }
@@ -99,7 +99,7 @@ class MakeReservationDialog extends ComponentDialog {
             return await step.endDialog();
         }
         if (step.result === false) {
-            await step.context.sendActivity('You chose not to go ahead with reservation.');
+            await step.context.sendActivity('You choose not to go ahead with reservation.');
             endDialog = true;
             return await step.endDialog();
         }
