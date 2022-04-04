@@ -4,6 +4,7 @@
 const { ActivityHandler, MessageFactory } = require('botbuilder');
 
 const { MakeReservationDialog } = require('./componentDialogs/makeReservationDialog');
+const { CancelReservationDialog } = require('./componentDialogs/cancelReservationDialog');
 
 class RRBOT extends ActivityHandler {
     constructor(conversationState, userState) {
@@ -13,13 +14,16 @@ class RRBOT extends ActivityHandler {
         this.userState = userState;
         this.dialogState = conversationState.createProperty('dialogState');
         this.makeReservationDialog = new MakeReservationDialog(this.conversationState, this.userState);
+        this.cancelReservationDialog = new CancelReservationDialog(this.conversationState, this.userState);
         this.previousIntent = this.conversationState.createProperty('previousIntent');
         this.conversationData = this.conversationState.createProperty('conservationData');
+
         // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
         this.onMessage(async (context, next) => {
             await this.dispatchToIntentAsync(context);
             await next();
         });
+
         this.onDialog(async (context, next) => {
             // Save any state changes. The load happened during the execution of the Dialog.
             await this.conversationState.saveChanges(context, false);
@@ -71,6 +75,18 @@ class RRBOT extends ActivityHandler {
             await this.makeReservationDialog.run(context, this.dialogState);
             conversationData.endDialog = await this.makeReservationDialog.isDialogComplete();
             if (conversationData.endDialog) {
+                await this.previousIntent.set(context, { intentName: null });
+                await this.sendSuggestedActions(context);
+            }
+            break;
+
+        case 'Cancel Reservation':
+            console.log('Inside Cancel Reservation Case');
+            await this.conversationData.set(context, { endDialog: false });
+            await this.cancelReservationDialog.run(context, this.dialogState);
+            conversationData.endDialog = await this.cancelReservationDialog.isDialogComplete();
+            if (conversationData.endDialog) {
+                await this.previousIntent.set(context, { intentName: null });
                 await this.sendSuggestedActions(context);
             }
             break;

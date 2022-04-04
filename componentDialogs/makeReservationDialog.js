@@ -57,6 +57,11 @@ class MakeReservationDialog extends ComponentDialog {
         if (step.result === true) {
             return await step.prompt(TEXT_PROMPT, 'In what name reservation is to be made?');
         }
+        if (step.result === false) {
+            await step.context.sendActivity('You chose not to go ahead with reservation.');
+            endDialog = true;
+            return await step.endDialog();
+        }
     }
 
     async getNumberOfParticipants(step) {
@@ -90,6 +95,11 @@ class MakeReservationDialog extends ComponentDialog {
         // Business
 
             await step.context.sendActivity('Reservation successfully made. Your reservation id is : 12345678');
+            endDialog = true;
+            return await step.endDialog();
+        }
+        if (step.result === false) {
+            await step.context.sendActivity('You chose not to go ahead with reservation.');
             endDialog = true;
             return await step.endDialog();
         }
