@@ -47,6 +47,7 @@ class MakeReservationDialog extends ComponentDialog {
     }
 
     async firstStep(step) {
+        step.values.noOfParticipants = step._info.options.noOfParticipants;
         endDialog = false;
         // Running a prompt here means the next WaterfallStep will be run when the users response is received.
         return await step.prompt(CONFIRM_PROMPT, 'Would you like to make a reservation?', ['yes', 'no']);
@@ -66,11 +67,17 @@ class MakeReservationDialog extends ComponentDialog {
 
     async getNumberOfParticipants(step) {
         step.values.name = step.result;
-        return await step.prompt(NUMBER_PROMPT, 'How many participants ( 1 - 150)?');
+        if (!step.values.noOfParticipants) {
+            return await step.prompt(NUMBER_PROMPT, 'How many participants ( 1 - 150)?');
+        } else {
+            return await step.continueDialog();
+        }
     }
 
     async getDate(step) {
-        step.values.noOfParticipants = step.result;
+        if (!step.values.noOfParticipants) {
+            step.values.noOfParticipants = step.result;
+        }
 
         return await step.prompt(DATETIME_PROMPT, 'On which date you want to make the reservation?');
     }

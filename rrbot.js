@@ -22,7 +22,7 @@ class RRBOT extends ActivityHandler {
         const dispatchRecognizer = new LuisRecognizer({
             applicationId: process.env.LuisAppId,
             endpointKey: process.env.LuisAPIKey,
-            endpoint: 'https://restaurantreservationbot.cognitiveservices.azure.com'
+            endpoint: `https://${ process.env.LuisAPIHostName }.cognitiveservices.azure.com`
         }, {
             includeAllIntents: true
         }, true);
