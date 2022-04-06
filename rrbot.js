@@ -5,7 +5,7 @@ const { ActivityHandler, MessageFactory } = require('botbuilder');
 
 const { MakeReservationDialog } = require('./componentDialogs/makeReservationDialog');
 const { CancelReservationDialog } = require('./componentDialogs/cancelReservationDialog');
-const { LuisRecognizer } = require('botbuilder-ai');
+const { LuisRecognizer, QnAMaker } = require('botbuilder-ai');
 
 class RRBOT extends ActivityHandler {
     constructor(conversationState, userState) {
@@ -26,6 +26,14 @@ class RRBOT extends ActivityHandler {
         }, {
             includeAllIntents: true
         }, true);
+
+        const qnaMaker = new QnAMaker({
+            knowledgeBaseId: process.env.QnAKnowledgebaseId,
+            endpointKey: process.env.QnAEndpointKey,
+            host: process.env.QnAEndpointHostName
+        });
+
+        this.qnaMaker = qnaMaker;
 
         // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
         this.onMessage(async (context, next) => {
@@ -76,6 +84,10 @@ class RRBOT extends ActivityHandler {
             currentIntent = previousIntent.intentName;
         } else if (previousIntent.intentName && conversationData.endDialog === true) {
             currentIntent = intent;
+        } else if (intent === 'None' && !previousIntent.intentName) {
+            var result = await this.qnaMaker.getAnswers(context);
+            await context.sendActivity(`${ result[0].answer }`);
+            await this.sendSuggestedActions(context);
         } else {
             currentIntent = intent;
             await this.previousIntent.set(context, { intentName: intent });
