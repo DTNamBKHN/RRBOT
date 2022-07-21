@@ -6,12 +6,14 @@ const { DialogSet, DialogTurnStatus } = require('botbuilder-dialogs');
 
 const { CardFactory } = require('botbuilder');
 
-const RestaurantCard = require('../resources/adaptiveCards/Restaurantcard');
+const RestaurantCard = require('../resources/adaptiveCards/Restaurantcard.json');
 
 const CARDS = [
 
     RestaurantCard
 ];
+
+const { MessageFactory } = require('botbuilder');
 
 const CHOICE_PROMPT = 'CHOICE_PROMPT';
 const CONFIRM_PROMPT = 'CONFIRM_PROMPT';
@@ -54,10 +56,21 @@ class CancelReservationDialog extends ComponentDialog {
     async firstStep(step) {
         endDialog = false;
         // Running a prompt here means the next WaterfallStep will be run when the users response is received.
-        await step.context.sendActivity({
-            text: 'Enter reservation details for cancellation:',
-            attachments: [CardFactory.adaptiveCard(CARDS[0])]
-        });
+        CARDS[0].body[0].text = 'Card Title';
+        CARDS[0].body[1].columns[0].items[0].url = 'https://firebasestorage.googleapis.com/v0/b/restaurant-reservation-bot.appspot.com/o/Broken%20Rice%20(C%C6%A1m%20t%E1%BA%A5m).jpg?alt=media&token=0f16e62c-b04c-429a-bcb4-485feb69b604';
+        CARDS[0].body[1].columns[1].items[0].text = 'Thanh Nam';
+        CARDS[0].body[2].text = 'Hahahaha';
+        CARDS[0].actions[0].url = 'https://www.google.com/';
+
+        // await step.context.sendActivity({
+        //     text: 'Enter reservation details for cancellation:',
+        //     attachments: [CardFactory.bind(CARDS[0])]
+        // });
+        const card = CardFactory.adaptiveCard(CARDS[0]);
+        const msg = MessageFactory.text('Enter reservation details for cancellation:');
+        msg.attachments = [card];
+        await step.context.sendActivity(msg);
+
         return await step.prompt(TEXT_PROMPT, '');
     }
 
