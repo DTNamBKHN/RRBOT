@@ -59,7 +59,7 @@ class MakeReservationDialog extends ComponentDialog {
             return await step.prompt(TEXT_PROMPT, 'In what name reservation is to be made?');
         }
         if (step.result === false) {
-            await step.context.sendActivity('You choose not to go ahead with reservation.');
+            await step.context.sendActivity('You chose not to go ahead with reservation.');
             endDialog = true;
             return await step.endDialog();
         }
@@ -106,7 +106,7 @@ class MakeReservationDialog extends ComponentDialog {
             return await step.endDialog();
         }
         if (step.result === false) {
-            await step.context.sendActivity('You choose not to go ahead with reservation.');
+            await step.context.sendActivity('You chose not to go ahead with reservation.');
             endDialog = true;
             return await step.endDialog();
         }

@@ -66,10 +66,10 @@ const onTurnErrorHandler = async (context, error) => {
 // Set the onTurnError for the singleton BotFrameworkAdapter.
 adapter.onTurnError = onTurnErrorHandler;
 
-const memmoryStorage = new MemoryStorage();
+const memoryStorage = new MemoryStorage();
 
-const conversationState = new ConversationState(memmoryStorage);
-const userState = new UserState(MemoryStorage);
+const conversationState = new ConversationState(memoryStorage);
+const userState = new UserState(memoryStorage);
 
 // Create the main dialog.
 const rrbot = new RRBOT(conversationState, userState);

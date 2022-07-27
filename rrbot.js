@@ -50,6 +50,7 @@ class RRBOT extends ActivityHandler {
             await this.userState.saveChanges(context, false);
             await next();
         });
+
         this.onMembersAdded(async (context, next) => {
             await this.sendWelcomeMessage(context);
             // By calling next() you ensure that the next BotHandler is run.

@@ -91,7 +91,7 @@ class CancelReservationDialog extends ComponentDialog {
             return await step.endDialog();
         }
         if (step.result === false) {
-            await step.context.sendActivity('You choose not to go ahead with reservation.');
+            await step.context.sendActivity('You chose not to go ahead with reservation.');
             endDialog = true;
             return await step.endDialog();
         }
