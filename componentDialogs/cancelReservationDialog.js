@@ -59,7 +59,7 @@ class CancelReservationDialog extends ComponentDialog {
         CARDS[0].body[0].text = 'Card Title';
         CARDS[0].body[1].columns[0].items[0].url = 'https://firebasestorage.googleapis.com/v0/b/restaurant-reservation-bot.appspot.com/o/Broken%20Rice%20(C%C6%A1m%20t%E1%BA%A5m).jpg?alt=media&token=0f16e62c-b04c-429a-bcb4-485feb69b604';
         CARDS[0].body[1].columns[1].items[0].text = 'Thanh Nam';
-        CARDS[0].body[2].text = 'Hahahaha';
+        CARDS[0].body[2].text = 'Hhhhhhhhh';
         CARDS[0].actions[0].url = 'https://www.google.com/';
 
         // await step.context.sendActivity({
@@ -99,6 +99,37 @@ class CancelReservationDialog extends ComponentDialog {
 
     async isDialogComplete() {
         return endDialog;
+    }
+
+    // Hanlde interruption
+    async onContinueDialog(innerDc) {
+        const result = await this.interrupt(innerDc);
+        if (result) {
+            return result;
+        }
+        return await super.onContinueDialog(innerDc);
+    }
+
+    async interrupt(innerDc) {
+        if (innerDc.context.activity.text) {
+            const text = innerDc.context.activity.text.toLowerCase();
+
+            switch (text) {
+            case 'help':
+            case '?': {
+                const helpMessageText = 'Show help here';
+                await innerDc.context.sendActivity(helpMessageText);
+                return { status: DialogTurnStatus.waiting };
+            }
+            case 'cancel':
+            case 'quit': {
+                const cancelMessageText = 'Cancelling...';
+                await innerDc.context.sendActivity(cancelMessageText);
+                endDialog = true;
+                return await innerDc.cancelAllDialogs();
+            }
+            }
+        }
     }
 }
 

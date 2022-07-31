@@ -1,15 +1,3 @@
-// Database connection.
-import { initializeApp } from 'firebase/app';
-const firebaseConfig = {
-    apiKey: 'AIzaSyCMDMCYT0Jue6E7J1-90C4llg3Va8etOCU',
-    authDomain: 'restaurant-reservation-bot.firebaseapp.com',
-    projectId: 'restaurant-reservation-bot',
-    storageBucket: 'restaurant-reservation-bot.appspot.com',
-    messagingSenderId: '338221774559',
-    appId: '1:338221774559:web:d9d848b552151423781b6a'
-};
-
-initializeApp(firebaseConfig);
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 

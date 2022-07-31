@@ -16,6 +16,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
+        "@botbuildercommunity/dialog-prompts": "^1.1.1",
         "adaptive-expressions": "^4.16.0",
         "adaptivecards": "^2.10.0",
         "adaptivecards-templating": "^2.2.0",

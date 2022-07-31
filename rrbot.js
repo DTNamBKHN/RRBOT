@@ -1,12 +1,26 @@
+// Database connection.
+import { initializeApp } from 'firebase/app';
+const firebaseConfig = {
+    apiKey: 'AIzaSyCMDMCYT0Jue6E7J1-90C4llg3Va8etOCU',
+    authDomain: 'restaurant-reservation-bot.firebaseapp.com',
+    projectId: 'restaurant-reservation-bot',
+    storageBucket: 'restaurant-reservation-bot.appspot.com',
+    messagingSenderId: '338221774559',
+    appId: '1:338221774559:web:d9d848b552151423781b6a'
+};
+
+// init firebase app
+initializeApp(firebaseConfig);
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 const { ActivityHandler, MessageFactory } = require('botbuilder');
 
+const { ReadMenuDialog } = require('./componentDialogs/readMenuDialog');
 const { MakeReservationDialog } = require('./componentDialogs/makeReservationDialog');
 const { CancelReservationDialog } = require('./componentDialogs/cancelReservationDialog');
+const { LoginDialog } = require('./componentDialogs/loginDialog');
 const { LuisRecognizer, QnAMaker } = require('botbuilder-ai');
-
 class RRBOT extends ActivityHandler {
     constructor(conversationState, userState) {
         super();
@@ -14,8 +28,10 @@ class RRBOT extends ActivityHandler {
         this.conversationState = conversationState;
         this.userState = userState;
         this.dialogState = conversationState.createProperty('dialogState');
+        this.readMenuDialog = new ReadMenuDialog(this.conversationState, this.userState);
         this.makeReservationDialog = new MakeReservationDialog(this.conversationState, this.userState);
         this.cancelReservationDialog = new CancelReservationDialog(this.conversationState, this.userState);
+        this.loginDialog = new LoginDialog(this.conversationState, this.userState);
         this.previousIntent = this.conversationState.createProperty('previousIntent');
         this.conversationData = this.conversationState.createProperty('conservationData');
 
@@ -40,6 +56,8 @@ class RRBOT extends ActivityHandler {
             const luisResult = await dispatchRecognizer.recognize(context);
             const intent = LuisRecognizer.topIntent(luisResult);
             const entities = luisResult.entities;
+            console.log('entities');
+            console.log(entities);
             await this.dispatchToIntentAsync(context, intent, entities);
             await next();
         });
@@ -64,7 +82,7 @@ class RRBOT extends ActivityHandler {
         // Iterate over all new members added to the conversation.
         for (const idx in activity.membersAdded) {
             if (activity.membersAdded[idx].id !== activity.recipient.id) {
-                const welcomeMessage = `Welcome to Restaurant Reservation Bot ${ activity.membersAdded[idx].name }. `;
+                const welcomeMessage = 'Welcome to Restaurant Reservation Bot. How can I help you today?';
                 await turnContext.sendActivity(welcomeMessage);
                 await this.sendSuggestedActions(turnContext);
             }
@@ -72,7 +90,7 @@ class RRBOT extends ActivityHandler {
     }
 
     async sendSuggestedActions(turnContext) {
-        var reply = MessageFactory.suggestedActions(['Make Reservation', 'Cancel Reservation', 'Restaurant Address'], 'What would you like to do today ?');
+        var reply = MessageFactory.suggestedActions(['Make Reservation', 'Cancel Reservation', 'Read the Menu'], 'What would you like to do today ?');
         await turnContext.sendActivity(reply);
     }
 
@@ -83,19 +101,46 @@ class RRBOT extends ActivityHandler {
 
         if (previousIntent.intentName && conversationData.endDialog === false) {
             currentIntent = previousIntent.intentName;
+            console.log('1-' + currentIntent);
         } else if (previousIntent.intentName && conversationData.endDialog === true) {
             currentIntent = intent;
+            console.log('2-' + currentIntent);
         } else if (intent === 'None' && !previousIntent.intentName) {
             var result = await this.qnaMaker.getAnswers(context);
             await context.sendActivity(`${ result[0].answer }`);
             await this.sendSuggestedActions(context);
         } else {
             currentIntent = intent;
+            console.log('3-' + currentIntent);
             await this.previousIntent.set(context, { intentName: intent });
+            // await this.conversationData.set(context, { entity: entities });
         }
+
         switch (currentIntent) {
-        case 'Make_Reservation':
-            console.log('Inside Make Reservation Case');
+        // case 'Login':
+        //     console.log('Inside Login Dialog');
+        //     await this.conversationData.set(context, { endDialog: false });
+        //     await this.loginDialog.run(context, this.dialogState);
+        //     conversationData.endDialog = await this.loginDialog.isDialogComplete();
+        //     if (conversationData.endDialog) {
+        //         await this.previousIntent.set(context, { intentName: null });
+        //         await this.sendSuggestedActions(context);
+        //         count++;
+        //     }
+        //     break;
+        case 'RestaurantReservation_ReadMenu':
+            console.log('Inside RestaurantReservation_ReadMenu Case');
+            await this.conversationData.set(context, { endDialog: false });
+            await this.readMenuDialog.run(context, this.dialogState, entities);
+            conversationData.endDialog = await this.readMenuDialog.isDialogComplete();
+            if (conversationData.endDialog) {
+                await this.previousIntent.set(context, { intentName: null });
+                await this.conversationData.set(context, { entity: null });
+                await this.sendSuggestedActions(context);
+            }
+            break;
+        case 'RestaurantReservation_Reserve':
+            console.log('Inside RestaurantReservation_Reserve Case');
             await this.conversationData.set(context, { endDialog: false });
             await this.makeReservationDialog.run(context, this.dialogState, entities);
             conversationData.endDialog = await this.makeReservationDialog.isDialogComplete();
@@ -105,7 +150,7 @@ class RRBOT extends ActivityHandler {
             }
             break;
 
-        case 'Cancel_Reservation':
+        case 'RestaurantReservation_DeleteReservation':
             console.log('Inside Cancel Reservation Case');
             await this.conversationData.set(context, { endDialog: false });
             await this.cancelReservationDialog.run(context, this.dialogState);
@@ -117,7 +162,7 @@ class RRBOT extends ActivityHandler {
             break;
 
         default:
-            console.log('Did not match Make Reservation case');
+            console.log('Did not match any case');
             break;
         }
     }
